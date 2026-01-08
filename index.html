@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Health Nexus OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  font-family:Inter,system-ui,sans-serif;
+  background:radial-gradient(circle at top,#0f172a,#000 70%);
+  color:#f8fafc;
+  overflow:hidden;
+}
+.watermark{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:120px;
+  font-weight:900;
+  letter-spacing:6px;
+  color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,.35);
+  animation:pulse 3s infinite;
+  pointer-events:none;
+}
+@keyframes pulse{
+  50%{text-shadow:0 0 35px rgba(255,255,255,.9)}
+}
+
+/* Floating stickers */
+.sticker{
+  position:fixed;
+  font-size:48px;
+  opacity:0.18;
+  animation:float 8s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-40px)}
+}
+.s1{top:10%;left:8%}
+.s2{top:70%;left:15%;animation-delay:1s}
+.s3{top:20%;right:10%;animation-delay:2s}
+.s4{top:75%;right:15%;animation-delay:.5s}
+
+header{
+  display:flex;
+  justify-content:flex-start;
+  padding:20px 40px;
+}
+main{max-width:1000px;margin:auto;padding:40px;position:relative;z-index:2}
+.card{
+  background:rgba(20,20,20,.8);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:26px;
+  padding:30px;
+}
+.tabs{display:flex;gap:12px;margin-bottom:20px}
+.tab{
+  padding:10px 18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.2);
+  cursor:pointer;
+}
+.tab.active{border-color:#7dd3fc}
+.inputs{display:none;margin:20px 0}
+label{display:block;margin:10px 0}
+.output{
+  margin-top:20px;
+  padding:20px;
+  border-radius:20px;
+  background:rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.15);
+  min-height:120px
+}
+button{
+  background:#000;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:14px;
+  padding:10px 16px;
+  margin-right:10px;
+}
+footer{
+  text-align:center;
+  padding:20px;
+  color:#cbd5e1;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="watermark">HEALTH NEXUS OS</div>
+
+<!-- Stickers -->
+<div class="sticker s1">🎓</div>
+<div class="sticker s2">🧠</div>
+<div class="sticker s3">📱</div>
+<div class="sticker s4">😴</div>
+
+<header>
+  <h2>Health Nexus OS</h2>
+</header>
+
+<main>
+<div class="card">
+
+<div class="tabs">
+  <div class="tab active" data-e="cog">Cognitive</div>
+  <div class="tab" data-e="sleep">Sleep</div>
+  <div class="tab" data-e="phone">Phone</div>
+  <div class="tab" data-e="stress">Stress</div>
+</div>
+
+<button id="advBtn">Advanced Inputs</button>
+<button id="runBtn">Run Engine</button>
+
+<div class="inputs" id="inputs"></div>
+<div class="output" id="out">Select inputs and click <b>Run Engine</b> to see analysis.</div>
+
+</div>
+</main>
+
+<footer>Built on Microsoft Azure • Explainable • Non-diagnostic</footer>
+
+<script>
+let currentEngine="cog";
+
+const ENGINES={
+ cog:{inputs:["Screen switching","Notifications","Study duration","Break frequency"],
+  eval:v=>v[0]+v[1]>14?
+   {risk:"High",cause:"Frequent app switching and constant alerts are fragmenting attention.",tips:"Silence non-essential notifications and study in focused blocks."}:
+   v[2]>7&&v[3]<3?
+   {risk:"Medium",cause:"Long study sessions without breaks are increasing mental fatigue.",tips:"Introduce short breaks to maintain focus."}:
+   {risk:"Low",cause:"Cognitive load is currently well balanced.",tips:"Maintain balanced study and focus habits."}
+ },
+ sleep:{inputs:["Sleep hours","Regularity","Late-night screen use"],
+  eval:v=>v[0]<5?
+   {risk:"High",cause:"Insufficient sleep duration is limiting recovery.",tips:"Gradually increase sleep time and fix bedtime."}:
+   v[2]>7?
+   {risk:"Medium",cause:"Late-night screen exposure is delaying sleep signals.",tips:"Reduce screen use before sleep."}:
+   {risk:"Low",cause:"Sleep patterns support recovery.",tips:"Continue consistent sleep habits."}
+ },
+ phone:{inputs:["Daily screen time","Night usage","Continuous usage"],
+  eval:v=>v[0]>8?
+   {risk:"High",cause:"Extended daily screen exposure is causing mental and visual strain.",tips:"Limit continuous screen use and take breaks."}:
+   v[1]>6?
+   {risk:"Medium",cause:"Night-time phone use is affecting rest cycles.",tips:"Avoid phone use close to bedtime."}:
+   {risk:"Low",cause:"Phone usage levels are within manageable limits.",tips:"Maintain healthy digital habits."}
+ },
+ stress:{inputs:["Academic load","Deadlines","Rest","Physical activity"],
+  eval:v=>v[0]+v[1]>14?
+   {risk:"High",cause:"Sustained academic pressure is activating stress responses.",tips:"Re-prioritize tasks and schedule recovery time."}:
+   v[2]<3?
+   {risk:"Medium",cause:"Insufficient rest is slowing stress recovery.",tips:"Add short rest intervals daily."}:
+   {risk:"Low",cause:"Workload and recovery appear balanced.",tips:"Continue healthy stress management routines."}
+ }
+};
+
+document.querySelectorAll(".tab").forEach(t=>{
+ t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  currentEngine=t.dataset.e;
+  inputs.innerHTML="";
+  inputs.style.display="none";
+  out.innerHTML="Select inputs and click <b>Run Engine</b> to see analysis.";
+ };
+});
+
+advBtn.onclick=()=>{
+ inputs.style.display=inputs.style.display==="block"?"none":"block";
+ inputs.innerHTML="";
+ ENGINES[currentEngine].inputs.forEach(n=>{
+  inputs.innerHTML+=`<label>${n}: <input type="range" min="0" max="10" value="5"></label>`;
+ });
+};
+
+runBtn.onclick=()=>{
+ const vals=[...document.querySelectorAll("#inputs input")].map(i=>+i.value);
+ const r=ENGINES[currentEngine].eval(vals);
+ out.innerHTML=`<b>Cause Analysis</b><p>${r.cause}</p><b>Risk Level: ${r.risk}</b><hr><b>Action Tips</b><p>${r.tips}</p>`;
+};
+</script>
+
+</body>
+</html>
